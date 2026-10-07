@@ -3,8 +3,8 @@
 // ---------------------------------------------------------
 // Photos inside the assets folder, named 1, 2, 3 ... and shown in that order.
 // Any of these extensions works (e.g. 1.jpg, 2.JPG, 3.png). Missing numbers are skipped.
-const PHOTOS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
-const PHOTO_EXTENSIONS = ['.jpg', '.JPG', '.jpeg', '.JPEG', '.png', '.PNG', '.webp'];
+const PHOTOS = ['1', '2', '3', '4', '5', '6'];
+const PHOTO_EXTENSIONS = ['.webp', '.jpg', '.JPG', '.jpeg', '.JPEG', '.png', '.PNG'];
 
 // Next visit: Dec 16, 2026 (India time, IST +05:30)
 const VISIT_DATE = "2026-12-16T00:00:00+05:30";
@@ -105,6 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
             img.alt = 'Sana & Adeeb ' + (i + 1);
             img.className = 'gallery-img';
             img.decoding = 'async';
+            img.loading = 'lazy';
 
             // Try each extension in turn until one loads
             let extIndex = 0;
