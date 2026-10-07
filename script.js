@@ -23,7 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const bgMusic = document.getElementById('bg-music');
     const musicToggle = document.getElementById('music-toggle');
     const musicIcon = document.getElementById('music-icon');
-    let isPlaying = false;
 
     // ---------------------------------------------------------
     // 2. Cover: floating hearts & open
@@ -45,9 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const setMusicState = (playing) => {
-        isPlaying = playing;
-        if (musicIcon) musicIcon.textContent = playing ? '🎵' : '🔇';
-        if (musicToggle) musicToggle.setAttribute('aria-label', playing ? 'Pause music' : 'Play music');
+        if (musicIcon) musicIcon.textContent = playing ? '🔊' : '🔇';
+        if (musicToggle) musicToggle.setAttribute('aria-label', playing ? 'Mute music' : 'Play music');
     };
 
     if (openBtn) {
@@ -59,14 +57,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (mainContent) mainContent.classList.remove('hidden');
             }, 900); // Matches the CSS cover fade
 
-            // Music is optional: the toggle only appears if assets/music.mp3 actually plays
+            // The mute button shows as soon as the page opens. If the phone blocks
+            // autoplay it shows 🔇 so a tap starts the song; it hides only when
+            // assets/music.mp3 is missing.
             if (bgMusic) {
+                if (musicToggle) musicToggle.classList.remove('hidden');
                 bgMusic.play()
-                    .then(() => {
-                        setMusicState(true);
-                        if (musicToggle) musicToggle.classList.remove('hidden');
-                    })
-                    .catch(() => setMusicState(false));
+                    .catch((err) => {
+                        setMusicState(false);
+                        if (err.name === 'NotSupportedError' && musicToggle) musicToggle.classList.add('hidden');
+                    });
             }
         });
     }
@@ -74,14 +74,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // ---------------------------------------------------------
     // 3. Audio Toggle Logic
     // ---------------------------------------------------------
+    // The icon follows the audio element itself, so it is right even while the
+    // song is still loading or after the browser pauses it.
     if (musicToggle && bgMusic) {
+        bgMusic.addEventListener('play', () => setMusicState(true));
+        bgMusic.addEventListener('pause', () => setMusicState(false));
+        // No song file: hide the button again
+        const musicSource = bgMusic.querySelector('source');
+        if (musicSource) musicSource.addEventListener('error', () => musicToggle.classList.add('hidden'));
         musicToggle.addEventListener('click', () => {
-            if (isPlaying) {
-                bgMusic.pause();
-                setMusicState(false);
-            } else {
-                setMusicState(true);
+            if (bgMusic.paused) {
                 bgMusic.play().catch(() => setMusicState(false));
+            } else {
+                bgMusic.pause();
             }
         });
     }
